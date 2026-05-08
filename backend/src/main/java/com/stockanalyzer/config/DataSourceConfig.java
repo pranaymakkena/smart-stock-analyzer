@@ -9,13 +9,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
 /**
- * Normalises the DATABASE_URL that Render (and Heroku) provide.
+ * Manually configures the DataSource so we can normalise the DATABASE_URL
+ * that Render provides (postgres://...) into the JDBC format Spring needs
+ * (jdbc:postgresql://...).
  *
- * Render gives:  postgres://user:pass@host:5432/dbname
- * Spring needs:  jdbc:postgresql://user:pass@host:5432/dbname
- *
- * This bean handles both formats so the app starts regardless of
- * which style is set in the environment variable.
+ * DataSourceAutoConfiguration is excluded in SmartStockAnalyzerApplication
+ * so Spring Boot doesn't try to wire its own conflicting DataSource bean.
  */
 @Configuration
 public class DataSourceConfig {
@@ -23,56 +22,37 @@ public class DataSourceConfig {
     @Value("${DATABASE_URL:}")
     private String databaseUrl;
 
-    @Value("${DB_USERNAME:sa}")
-    private String username;
-
-    @Value("${DB_PASSWORD:}")
-    private String password;
-
     @Bean
     @Primary
     public DataSource dataSource() {
         String url = resolveJdbcUrl();
 
-        // Pick the right driver from the URL
-        String driver = url.startsWith("jdbc:postgresql") ? "org.postgresql.Driver"
-                      : url.startsWith("jdbc:h2")         ? "org.h2.Driver"
-                      : "org.h2.Driver";
-
-        // For PostgreSQL, username/password come from the URL itself —
-        // no need to pass them separately (Render embeds them in the URL)
         if (url.startsWith("jdbc:postgresql")) {
+            // PostgreSQL — credentials are embedded in the URL by Render
             return DataSourceBuilder.create()
                     .url(url)
-                    .driverClassName(driver)
+                    .driverClassName("org.postgresql.Driver")
                     .build();
         }
 
-        // H2 local dev
+        // H2 — local development fallback
         return DataSourceBuilder.create()
                 .url(url)
-                .username(username)
-                .password(password)
-                .driverClassName(driver)
+                .username("sa")
+                .password("")
+                .driverClassName("org.h2.Driver")
                 .build();
     }
 
     private String resolveJdbcUrl() {
         if (databaseUrl == null || databaseUrl.isBlank()) {
-            // No DATABASE_URL set — use H2 for local development
             return "jdbc:h2:mem:stockanalyzerdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE";
         }
-
-        // Already correct format
-        if (databaseUrl.startsWith("jdbc:")) {
-            return databaseUrl;
-        }
-
-        // Render/Heroku style: postgres:// → jdbc:postgresql://
+        // Render gives postgres:// — convert to jdbc:postgresql://
         if (databaseUrl.startsWith("postgres://")) {
             return databaseUrl.replace("postgres://", "jdbc:postgresql://");
         }
-
+        // Already jdbc:postgresql:// or jdbc:h2://
         return databaseUrl;
     }
 }
