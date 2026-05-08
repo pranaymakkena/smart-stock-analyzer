@@ -105,8 +105,9 @@ npm run dev
 
 | Key | Value |
 |-----|-------|
-| `DATABASE_URL` | paste the Internal Database URL as-is — `postgres://user:pass@host/db` — the app converts it automatically |
-| `DDL_AUTO` | `update` |
+| `SPRING_DATASOURCE_URL` | Render's Internal DB URL with `postgres://` changed to `jdbc:postgresql://` — e.g. `jdbc:postgresql://user:pass@host:5432/db` |
+| `SPRING_DATASOURCE_DRIVER_CLASS_NAME` | `org.postgresql.Driver` |
+| `SPRING_JPA_HIBERNATE_DDL_AUTO` | `update` |
 | `JWT_SECRET` | any random string, 32+ chars |
 | `ALLOWED_ORIGINS` | your Vercel URL, e.g. `https://your-app.vercel.app` |
 | `ENABLE_H2_CONSOLE` | `false` |
