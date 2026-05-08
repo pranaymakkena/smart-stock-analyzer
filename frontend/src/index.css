@@ -1,0 +1,92 @@
+/* ── Google Font: Inter ─────────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-[#0d0f14] text-slate-100 antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+
+  /* Numeric figures look sharper in finance UIs */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  ::-webkit-scrollbar       { @apply w-1.5; }
+  ::-webkit-scrollbar-track { background: #0d0f14; }
+  ::-webkit-scrollbar-thumb { @apply rounded-full; background: #1f2433; }
+  ::-webkit-scrollbar-thumb:hover { background: #2d3348; }
+}
+
+@layer components {
+
+  /* ── Cards ──────────────────────────────────────────────────────────── */
+  .card {
+    @apply rounded-xl p-5;
+    background: #13161e;
+    border: 1px solid #1f2433;
+  }
+
+  /* ── Buttons ────────────────────────────────────────────────────────── */
+  .btn-primary {
+    @apply font-medium px-4 py-2 rounded-lg transition-all duration-150 text-white;
+    background: #7c3aed;
+    box-shadow: 0 0 0 0 #7c3aed40;
+  }
+  .btn-primary:hover {
+    background: #6d28d9;
+    box-shadow: 0 0 12px 2px #7c3aed30;
+  }
+
+  .btn-secondary {
+    @apply font-medium px-4 py-2 rounded-lg transition-colors duration-150 text-slate-200;
+    background: #1a1d27;
+    border: 1px solid #1f2433;
+  }
+  .btn-secondary:hover { background: #1f2433; }
+
+  .btn-danger {
+    @apply bg-red-600 hover:bg-red-700 text-white font-medium px-4 py-2 rounded-lg transition-colors;
+  }
+
+  .btn-success {
+    @apply font-medium px-4 py-2 rounded-lg transition-colors text-white;
+    background: #059669;
+  }
+  .btn-success:hover { background: #047857; }
+
+  /* ── Inputs ─────────────────────────────────────────────────────────── */
+  .input {
+    @apply rounded-lg px-3 py-2 w-full text-slate-100 transition-all duration-150;
+    background: #1a1d27;
+    border: 1px solid #1f2433;
+    outline: none;
+  }
+  .input::placeholder { color: #3d4460; }
+  .input:focus {
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 3px #7c3aed20;
+  }
+
+  /* ── Badges ─────────────────────────────────────────────────────────── */
+  .badge-up {
+    @apply px-2 py-0.5 rounded text-xs font-semibold tabular;
+    color: #34d399;
+    background: #34d39912;
+  }
+  .badge-down {
+    @apply px-2 py-0.5 rounded text-xs font-semibold tabular;
+    color: #f87171;
+    background: #f8717112;
+  }
+  .badge-neutral {
+    @apply px-2 py-0.5 rounded text-xs font-medium;
+    color: #8892a4;
+    background: #8892a412;
+  }
+}
