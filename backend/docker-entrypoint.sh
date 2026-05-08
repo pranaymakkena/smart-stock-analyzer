@@ -1,31 +1,23 @@
 #!/bin/sh
-# Converts Render's DATABASE_URL (postgres://...) to Spring's expected format
-# (jdbc:postgresql://...) and passes it as a JVM system property.
-# This runs before the JVM starts so Hibernate always gets a valid JDBC URL.
-
 set -e
 
+# Resolve the JDBC URL from either SPRING_DATASOURCE_URL or DATABASE_URL
 JDBC_URL=""
 
-if [ -n "$DATABASE_URL" ]; then
-  # Strip postgres:// or postgresql:// prefix and replace with jdbc:postgresql://
+if [ -n "$SPRING_DATASOURCE_URL" ]; then
+  JDBC_URL="$SPRING_DATASOURCE_URL"
+
+elif [ -n "$DATABASE_URL" ]; then
   case "$DATABASE_URL" in
-    jdbc:*)
-      JDBC_URL="$DATABASE_URL"
-      ;;
-    postgres://*)
-      JDBC_URL="jdbc:postgresql://${DATABASE_URL#postgres://}"
-      ;;
-    postgresql://*)
-      JDBC_URL="jdbc:postgresql://${DATABASE_URL#postgresql://}"
-      ;;
-    *)
-      JDBC_URL="$DATABASE_URL"
-      ;;
+    jdbc:*) JDBC_URL="$DATABASE_URL" ;;
+    postgres://*) JDBC_URL="jdbc:postgresql://${DATABASE_URL#postgres://}" ;;
+    postgresql://*) JDBC_URL="jdbc:postgresql://${DATABASE_URL#postgresql://}" ;;
+    *) JDBC_URL="$DATABASE_URL" ;;
   esac
+fi
 
-  echo "Starting with PostgreSQL: ${JDBC_URL%%@*}@..."
-
+if [ -n "$JDBC_URL" ]; then
+  echo "Starting with PostgreSQL datasource"
   exec java \
     -XX:+UseContainerSupport \
     -XX:MaxRAMPercentage=75.0 \
@@ -36,8 +28,7 @@ if [ -n "$DATABASE_URL" ]; then
     -Dspring.datasource.password="" \
     -jar app.jar
 else
-  echo "No DATABASE_URL set — starting with H2 (local dev mode)"
-
+  echo "No database URL set — starting with H2 (local dev mode)"
   exec java \
     -XX:+UseContainerSupport \
     -XX:MaxRAMPercentage=75.0 \
