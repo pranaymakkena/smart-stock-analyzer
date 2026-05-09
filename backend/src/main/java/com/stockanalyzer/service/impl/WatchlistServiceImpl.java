@@ -86,6 +86,7 @@ public class WatchlistServiceImpl implements WatchlistService {
     }
 
     @Override
+    @Transactional
     public List<StockResponse> getWatchlistStocks(Long watchlistId, String email) {
         User user = getUser(email);
         Watchlist watchlist = watchlistRepository.findByIdAndUser(watchlistId, user)
