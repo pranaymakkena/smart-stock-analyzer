@@ -89,4 +89,39 @@
     color: #8892a4;
     background: #8892a412;
   }
+
+  /* ── Mobile bottom nav ───────────────────────────────────────────────── */
+  .bottom-nav {
+    @apply fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around px-2 py-2;
+    background: #13161e;
+    border-top: 1px solid #1f2433;
+    padding-bottom: env(safe-area-inset-bottom, 8px);
+  }
+
+  .bottom-nav-item {
+    @apply flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all duration-150 text-[10px] font-medium;
+    color: #8892a4;
+    min-width: 48px;
+  }
+
+  .bottom-nav-item.active {
+    color: #a78bfa;
+    background: #7c3aed18;
+  }
+}
+
+@layer utilities {
+  /* Modal slide-up animation */
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .animate-slide-up {
+    animation: slideUp 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  /* Safe area padding for mobile */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
 }

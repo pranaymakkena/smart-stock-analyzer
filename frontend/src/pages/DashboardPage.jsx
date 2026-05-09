@@ -59,16 +59,16 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-white">
+          <h1 className="text-xl sm:text-2xl font-bold text-white">
             Good morning, {user?.firstName} 👋
           </h1>
           <p className="text-slate-400 text-sm mt-1">Here's your market overview</p>
         </div>
         <button
           onClick={() => { refreshUser(); toast.success('Refreshed!') }}
-          className="btn-secondary flex items-center gap-2 text-sm"
+          className="btn-secondary flex items-center gap-2 text-sm self-start sm:self-auto"
         >
           <RefreshCw size={14} /> Refresh
         </button>

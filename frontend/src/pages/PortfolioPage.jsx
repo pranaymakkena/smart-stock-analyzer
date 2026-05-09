@@ -3,6 +3,7 @@ import { portfolioApi } from '../services/api'
 import { useAuth } from '../context/AuthContext'
 import { Briefcase, TrendingUp, TrendingDown, Plus } from 'lucide-react'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
+import { PromptModal } from '../components/Modal'
 import toast from 'react-hot-toast'
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899']
@@ -11,6 +12,7 @@ export default function PortfolioPage() {
   const { user, refreshUser } = useAuth()
   const [portfolios, setPortfolios] = useState([])
   const [loading, setLoading] = useState(true)
+  const [createOpen, setCreateOpen] = useState(false)
 
   useEffect(() => {
     loadPortfolios()
@@ -22,9 +24,7 @@ export default function PortfolioPage() {
       .finally(() => setLoading(false))
   }
 
-  const handleCreate = async () => {
-    const name = prompt('Portfolio name:')
-    if (!name) return
+  const handleCreate = async (name) => {
     try {
       await portfolioApi.create(name)
       toast.success('Portfolio created')
@@ -51,7 +51,7 @@ export default function PortfolioPage() {
         <h1 className="text-2xl font-bold text-white">My Portfolio</h1>
         <div className="flex gap-2">
           <button onClick={handleRefresh} className="btn-secondary text-sm">Refresh</button>
-          <button onClick={handleCreate} className="btn-primary text-sm flex items-center gap-2">
+          <button onClick={() => setCreateOpen(true)} className="btn-primary text-sm flex items-center gap-2">
             <Plus size={14} /> New Portfolio
           </button>
         </div>
@@ -61,7 +61,7 @@ export default function PortfolioPage() {
         <div className="card text-center py-16">
           <Briefcase size={48} className="mx-auto text-slate-600 mb-4" />
           <p className="text-slate-400 mb-4">No portfolios yet</p>
-          <button onClick={handleCreate} className="btn-primary">Create Your First Portfolio</button>
+          <button onClick={() => setCreateOpen(true)} className="btn-primary">Create Your First Portfolio</button>
         </div>
       ) : (
         <div className="space-y-6">
@@ -145,6 +145,17 @@ export default function PortfolioPage() {
           })}
         </div>
       )}
+
+      {/* Create portfolio modal */}
+      <PromptModal
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        onSubmit={handleCreate}
+        title="New Portfolio"
+        label="Portfolio name"
+        placeholder="e.g. Growth Portfolio"
+        submitLabel="Create"
+      />
     </div>
   )
 }

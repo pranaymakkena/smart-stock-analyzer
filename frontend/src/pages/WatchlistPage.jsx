@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { watchlistApi } from '../services/api'
 import StockCard from '../components/StockCard'
+import { PromptModal, ConfirmModal } from '../components/Modal'
 import { Star, Plus, Trash2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 
@@ -9,6 +10,11 @@ export default function WatchlistPage() {
   const [selected, setSelected]     = useState(null)
   const [stocks, setStocks]         = useState([])
   const [loading, setLoading]       = useState(true)
+
+  // Modal states
+  const [createOpen, setCreateOpen]       = useState(false)
+  const [addStockOpen, setAddStockOpen]   = useState(false)
+  const [deleteTarget, setDeleteTarget]   = useState(null) // watchlist id to delete
 
   useEffect(() => {
     loadWatchlists()
@@ -37,9 +43,7 @@ export default function WatchlistPage() {
     }
   }
 
-  const handleCreate = async () => {
-    const name = prompt('Watchlist name:')
-    if (!name) return
+  const handleCreate = async (name) => {
     try {
       await watchlistApi.create(name)
       toast.success('Watchlist created')
@@ -47,10 +51,8 @@ export default function WatchlistPage() {
     } catch {}
   }
 
-  const handleAddStock = async () => {
+  const handleAddStock = async (sym) => {
     if (!selected) return
-    const sym = prompt('Stock symbol:')
-    if (!sym) return
     try {
       await watchlistApi.addStock(selected.id, sym.toUpperCase())
       toast.success(`${sym.toUpperCase()} added`)
@@ -67,10 +69,10 @@ export default function WatchlistPage() {
     } catch {}
   }
 
-  const handleDelete = async (id) => {
-    if (!confirm('Delete this watchlist?')) return
+  const handleDelete = async () => {
+    if (!deleteTarget) return
     try {
-      await watchlistApi.delete(id)
+      await watchlistApi.delete(deleteTarget)
       toast.success('Watchlist deleted')
       setSelected(null)
       setStocks([])
@@ -87,7 +89,7 @@ export default function WatchlistPage() {
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-white">Watchlists</h1>
-        <button onClick={handleCreate} className="btn-primary text-sm flex items-center gap-2">
+        <button onClick={() => setCreateOpen(true)} className="btn-primary text-sm flex items-center gap-2">
           <Plus size={14} /> New Watchlist
         </button>
       </div>
@@ -100,17 +102,17 @@ export default function WatchlistPage() {
         <div className="card text-center py-16">
           <Star size={48} className="mx-auto text-slate-600 mb-4" />
           <p className="text-slate-400 mb-4">No watchlists yet</p>
-          <button onClick={handleCreate} className="btn-primary">Create Watchlist</button>
+          <button onClick={() => setCreateOpen(true)} className="btn-primary">Create Watchlist</button>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Sidebar */}
-          <div className="space-y-2">
+          {/* Watchlist list */}
+          <div className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-x-visible pb-1 lg:pb-0">
             {watchlists.map(wl => (
               <div
                 key={wl.id}
                 onClick={() => selectWatchlist(wl)}
-                className={`flex items-center justify-between p-3 rounded-lg cursor-pointer transition-colors ${
+                className={`flex items-center justify-between p-3 rounded-lg cursor-pointer transition-colors flex-shrink-0 lg:flex-shrink ${
                   selected?.id === wl.id
                     ? 'bg-violet-600/20 border border-violet-600/30 text-violet-400'
                     : 'bg-slate-900 border border-slate-800 text-slate-300 hover:border-slate-700'
@@ -118,11 +120,11 @@ export default function WatchlistPage() {
               >
                 <div className="flex items-center gap-2">
                   <Star size={14} />
-                  <span className="text-sm font-medium">{wl.name}</span>
+                  <span className="text-sm font-medium whitespace-nowrap">{wl.name}</span>
                 </div>
                 <button
-                  onClick={e => { e.stopPropagation(); handleDelete(wl.id) }}
-                  className="text-slate-500 hover:text-red-400 transition-colors"
+                  onClick={e => { e.stopPropagation(); setDeleteTarget(wl.id) }}
+                  className="text-slate-500 hover:text-red-400 transition-colors ml-2"
                 >
                   <Trash2 size={14} />
                 </button>
@@ -130,13 +132,13 @@ export default function WatchlistPage() {
             ))}
           </div>
 
-          {/* Stocks */}
+          {/* Stocks grid */}
           <div className="lg:col-span-3">
             {selected && (
               <>
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="font-semibold text-white">{selected.name}</h2>
-                  <button onClick={handleAddStock} className="btn-secondary text-sm flex items-center gap-2">
+                  <button onClick={() => setAddStockOpen(true)} className="btn-secondary text-sm flex items-center gap-2">
                     <Plus size={14} /> Add Stock
                   </button>
                 </div>
@@ -164,6 +166,37 @@ export default function WatchlistPage() {
           </div>
         </div>
       )}
+
+      {/* Modals */}
+      <PromptModal
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        onSubmit={handleCreate}
+        title="New Watchlist"
+        label="Watchlist name"
+        placeholder="e.g. Tech Stocks"
+        submitLabel="Create"
+      />
+
+      <PromptModal
+        open={addStockOpen}
+        onClose={() => setAddStockOpen(false)}
+        onSubmit={handleAddStock}
+        title="Add Stock"
+        label="Stock symbol"
+        placeholder="e.g. AAPL"
+        submitLabel="Add"
+      />
+
+      <ConfirmModal
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDelete}
+        title="Delete Watchlist"
+        message="This will permanently delete the watchlist and all its stocks. This cannot be undone."
+        confirmLabel="Delete"
+        danger
+      />
     </div>
   )
 }

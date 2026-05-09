@@ -88,15 +88,15 @@ export default function StockDetailPage() {
       </button>
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+      <div className="flex flex-col gap-4">
         <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold text-white">{stock.symbol}</h1>
+          <div className="flex items-center gap-3 flex-wrap">
+            <h1 className="text-2xl sm:text-3xl font-bold text-white">{stock.symbol}</h1>
             <span className="text-xs bg-slate-800 text-slate-400 px-2 py-1 rounded">{stock.sector}</span>
           </div>
           <p className="text-slate-400 mt-1">{stock.companyName}</p>
-          <div className="flex items-center gap-3 mt-2">
-            <span className="text-3xl font-bold text-white">
+          <div className="flex items-center gap-3 mt-2 flex-wrap">
+            <span className="text-2xl sm:text-3xl font-bold text-white">
               ${parseFloat(stock.currentPrice || 0).toFixed(2)}
             </span>
             <span className={clsx('flex items-center gap-1 text-lg font-semibold',
@@ -108,7 +108,7 @@ export default function StockDetailPage() {
         </div>
 
         {/* Trade panel */}
-        <div className="card min-w-[220px]">
+        <div className="card w-full sm:max-w-xs">
           <p className="text-sm text-slate-400 mb-3">Virtual Trade</p>
           <div className="flex items-center gap-2 mb-3">
             <button onClick={() => setTradeQty(Math.max(1, tradeQty - 1))}
