@@ -1,5 +1,11 @@
 package com.stockanalyzer.service.impl;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.stockanalyzer.dto.response.StockResponse;
 import com.stockanalyzer.entity.Stock;
 import com.stockanalyzer.entity.User;
@@ -8,11 +14,6 @@ import com.stockanalyzer.repository.StockRepository;
 import com.stockanalyzer.repository.UserRepository;
 import com.stockanalyzer.repository.WatchlistRepository;
 import com.stockanalyzer.service.WatchlistService;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class WatchlistServiceImpl implements WatchlistService {
@@ -31,9 +32,10 @@ public class WatchlistServiceImpl implements WatchlistService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Watchlist> getUserWatchlists(String email) {
         User user = getUser(email);
-        return watchlistRepository.findByUser(user);
+        return watchlistRepository.findByUserWithStocks(user);
     }
 
     @Override
@@ -50,7 +52,7 @@ public class WatchlistServiceImpl implements WatchlistService {
     @Transactional
     public Watchlist addStockToWatchlist(Long watchlistId, String symbol, String email) {
         User user = getUser(email);
-        Watchlist watchlist = watchlistRepository.findByIdAndUser(watchlistId, user)
+        Watchlist watchlist = watchlistRepository.findByIdAndUserWithStocks(watchlistId, user)
                 .orElseThrow(() -> new RuntimeException("Watchlist not found"));
 
         Stock stock = stockRepository.findBySymbol(symbol.toUpperCase())
@@ -69,7 +71,7 @@ public class WatchlistServiceImpl implements WatchlistService {
     @Transactional
     public Watchlist removeStockFromWatchlist(Long watchlistId, String symbol, String email) {
         User user = getUser(email);
-        Watchlist watchlist = watchlistRepository.findByIdAndUser(watchlistId, user)
+        Watchlist watchlist = watchlistRepository.findByIdAndUserWithStocks(watchlistId, user)
                 .orElseThrow(() -> new RuntimeException("Watchlist not found"));
 
         watchlist.getStocks().removeIf(s -> s.getSymbol().equalsIgnoreCase(symbol));
@@ -86,10 +88,10 @@ public class WatchlistServiceImpl implements WatchlistService {
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public List<StockResponse> getWatchlistStocks(Long watchlistId, String email) {
         User user = getUser(email);
-        Watchlist watchlist = watchlistRepository.findByIdAndUser(watchlistId, user)
+        Watchlist watchlist = watchlistRepository.findByIdAndUserWithStocks(watchlistId, user)
                 .orElseThrow(() -> new RuntimeException("Watchlist not found"));
         return watchlist.getStocks().stream()
                 .map(stockService::mapToResponse)
