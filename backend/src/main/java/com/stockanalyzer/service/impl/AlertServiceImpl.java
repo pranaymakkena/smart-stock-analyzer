@@ -1,5 +1,15 @@
 package com.stockanalyzer.service.impl;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.stockanalyzer.dto.request.AlertRequest;
 import com.stockanalyzer.entity.Alert;
 import com.stockanalyzer.entity.Stock;
@@ -8,15 +18,6 @@ import com.stockanalyzer.repository.AlertRepository;
 import com.stockanalyzer.repository.StockRepository;
 import com.stockanalyzer.repository.UserRepository;
 import com.stockanalyzer.service.AlertService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 public class AlertServiceImpl implements AlertService {
@@ -52,6 +53,7 @@ public class AlertServiceImpl implements AlertService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Alert> getUserAlerts(String email) {
         User user = getUser(email);
         return alertRepository.findByUserOrderByCreatedAtDesc(user);

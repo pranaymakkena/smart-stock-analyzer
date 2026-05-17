@@ -1,22 +1,31 @@
 package com.stockanalyzer.service.impl;
 
-import com.stockanalyzer.dto.request.TradeRequest;
-import com.stockanalyzer.dto.response.PortfolioItemResponse;
-import com.stockanalyzer.dto.response.PortfolioResponse;
-import com.stockanalyzer.dto.response.TransactionResponse;
-import com.stockanalyzer.entity.*;
-import com.stockanalyzer.entity.enums.TransactionType;
-import com.stockanalyzer.repository.*;
-import com.stockanalyzer.service.PortfolioService;
-import com.stockanalyzer.service.StockService;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.stockanalyzer.dto.request.TradeRequest;
+import com.stockanalyzer.dto.response.PortfolioItemResponse;
+import com.stockanalyzer.dto.response.PortfolioResponse;
+import com.stockanalyzer.dto.response.TransactionResponse;
+import com.stockanalyzer.entity.Portfolio;
+import com.stockanalyzer.entity.PortfolioItem;
+import com.stockanalyzer.entity.Stock;
+import com.stockanalyzer.entity.Transaction;
+import com.stockanalyzer.entity.User;
+import com.stockanalyzer.entity.enums.TransactionType;
+import com.stockanalyzer.repository.PortfolioItemRepository;
+import com.stockanalyzer.repository.PortfolioRepository;
+import com.stockanalyzer.repository.StockRepository;
+import com.stockanalyzer.repository.TransactionRepository;
+import com.stockanalyzer.repository.UserRepository;
+import com.stockanalyzer.service.PortfolioService;
+import com.stockanalyzer.service.StockService;
 
 @Service
 public class PortfolioServiceImpl implements PortfolioService {
@@ -45,6 +54,7 @@ public class PortfolioServiceImpl implements PortfolioService {
     private static final MathContext MC = new MathContext(10, RoundingMode.HALF_UP);
 
     @Override
+    @Transactional(readOnly = true)
     public List<PortfolioResponse> getUserPortfolios(String email) {
         User user = getUser(email);
         return portfolioRepository.findByUser(user).stream()
@@ -53,6 +63,7 @@ public class PortfolioServiceImpl implements PortfolioService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public PortfolioResponse getPortfolioById(Long id, String email) {
         User user = getUser(email);
         Portfolio portfolio = portfolioRepository.findByIdAndUser(id, user)
@@ -182,6 +193,7 @@ public class PortfolioServiceImpl implements PortfolioService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<TransactionResponse> getTransactionHistory(String email) {
         User user = getUser(email);
         return transactionRepository.findByUserOrderByTransactionDateDesc(user).stream()

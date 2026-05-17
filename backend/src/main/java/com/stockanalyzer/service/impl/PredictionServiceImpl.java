@@ -1,23 +1,38 @@
 package com.stockanalyzer.service.impl;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.stockanalyzer.dto.response.PredictionResult;
 import com.stockanalyzer.dto.response.RiskAnalysisResponse;
-import com.stockanalyzer.entity.*;
-import com.stockanalyzer.repository.*;
+import com.stockanalyzer.entity.Portfolio;
+import com.stockanalyzer.entity.Prediction;
+import com.stockanalyzer.entity.Stock;
+import com.stockanalyzer.entity.StockHistory;
+import com.stockanalyzer.entity.User;
+import com.stockanalyzer.entity.Watchlist;
+import com.stockanalyzer.repository.PortfolioRepository;
+import com.stockanalyzer.repository.PredictionRepository;
+import com.stockanalyzer.repository.StockHistoryRepository;
+import com.stockanalyzer.repository.StockRepository;
+import com.stockanalyzer.repository.UserRepository;
+import com.stockanalyzer.repository.WatchlistRepository;
 import com.stockanalyzer.service.PredictionService;
 import com.stockanalyzer.strategy.LinearRegressionPrediction;
 import com.stockanalyzer.strategy.MovingAveragePrediction;
 import com.stockanalyzer.strategy.PredictionStrategy;
 import com.stockanalyzer.strategy.TrendAnalysisPrediction;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-
-import java.math.BigDecimal;
-import java.math.MathContext;
-import java.math.RoundingMode;
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class PredictionServiceImpl implements PredictionService {
@@ -168,6 +183,7 @@ public class PredictionServiceImpl implements PredictionService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Map<String, Object> getRecommendations(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -175,8 +191,8 @@ public class PredictionServiceImpl implements PredictionService {
         Map<String, Object> recommendations = new LinkedHashMap<>();
         List<String> insights = new ArrayList<>();
 
-        // Analyze watchlist
-        List<Watchlist> watchlists = watchlistRepository.findByUser(user);
+        // Use fetch query to avoid LazyInitializationException on stocks collection
+        List<Watchlist> watchlists = watchlistRepository.findByUserWithStocks(user);
         List<String> watchlistSymbols = watchlists.stream()
                 .flatMap(w -> w.getStocks().stream())
                 .map(Stock::getSymbol)
